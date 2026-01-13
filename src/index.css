@@ -1,0 +1,134 @@
+/* --- Cấu hình chung --- */
+:root {
+  --primary-color: #4a90e2;
+  --bg-color: #f0f4f8;
+  --card-bg: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #333;
+}
+
+/* --- Khung chứa App (Adaptive Container) --- */
+.app-container {
+  max-width: 1200px; /* Giới hạn độ rộng trên máy tính để không bị loãng */
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header (Co dãn theo màn hình) --- */
+.header {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  text-align: center;
+  padding: 2rem 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.tab-menu {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Tự xuống dòng nếu màn hình điện thoại quá nhỏ */
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.tab-menu button {
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.tab-menu button.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* --- Khu vực làm việc chính (Bố cục linh hoạt) --- */
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Mặc định trên Mobile: Xếp dọc */
+.work-zone {
+  display: grid;
+  grid-template-columns: 1fr; 
+  gap: 20px;
+}
+
+.camera-box {
+  width: 100%;
+  aspect-ratio: 16/9; /* Giữ tỉ lệ khung hình chuẩn */
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.camera-box video { width: 100%; height: 100%; object-fit: cover; }
+
+/* 4 nút chức năng: 2 cột trên mobile */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* --- 3 Mô-đun Kết quả (Responsive Grid) --- */
+.result-area {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile: 1 cột */
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.res-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 8px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* --- ĐIỂM NGẮT (BREAKPOINTS) --- */
+
+/* 1. Dành cho iPad/Máy tính bảng (Từ 768px trở lên) */
+@media (min-width: 768px) {
+  .work-zone {
+    grid-template-columns: 1.5fr 1fr; /* Camera bên trái, nút bên phải */
+    align-items: start;
+  }
+  
+  .action-grid {
+    grid-template-columns: 1fr; /* Xếp dọc các nút bên cạnh camera */
+  }
+
+  .result-area {
+    grid-template-columns: repeat(2, 1fr); /* Kết quả chia 2 cột */
+  }
+}
+
+/* 2. Dành cho Máy tính/Laptop (Từ 1024px trở lên) */
+@media (min-width: 1024px) {
+  .result-area {
+    grid-template-columns: repeat(3, 1fr); /* 3 mô-đun dàn hàng ngang cực đẹp */
+  }
+  
+  .res-card {
+    min-height: 200px;
+  }
+}
