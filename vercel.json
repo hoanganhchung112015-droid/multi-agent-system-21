@@ -1,9 +1,21 @@
 {
+  "version": 2,
   "functions": {
     "api/*.ts": {
-      "runtime": "edge",
-      "memory": 128,
-      "maxDuration": 30
+      "runtime": "edge"
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
