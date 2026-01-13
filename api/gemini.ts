@@ -1,34 +1,41 @@
-export const config = { runtime: 'edge' };
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export default async function handler(req: Request) {
-  const { subject, image, text } = await req.json();
-  const apiKey = process.env.GEMINI_API_KEY;
+export default async function handler(req: any, res: any) {
+  // Chỉ chấp nhận phương thức POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
 
-  const systemPrompt = `Bạn là chuyên gia môn ${subject}. Giải câu hỏi và trả về JSON:
-  {
-    "giai_nhanh": "Chỉ ghi đáp án cuối cùng (VD: x = 5)",
-    "gia_su": "Tóm tắt lời giải ngắn gọn các bước",
-    "skill": [
-      {"q": "Câu trắc nghiệm tương tự 1", "o": ["A","B","C","D"], "a": "Đáp án đúng"},
-      {"q": "Câu trắc nghiệm tương tự 2", "o": ["A","B","C","D"], "a": "Đáp án đúng"}
-    ]
-  }`;
+  try {
+    const { subject, image, text } = req.body;
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const payload = {
-    contents: [{
-      parts: [
-        { text: systemPrompt + (text ? `\nCâu hỏi: ${text}` : "") },
-        ...(image ? [{ inlineData: { mimeType: "image/jpeg", data: image } }] : [])
-      ]
-    }],
-    generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
-  };
+    const systemPrompt = `Bạn là chuyên gia môn ${subject}. Giải câu hỏi và trả về JSON thuần túy:
+    {
+      "giai_nhanh": "Đáp án cuối",
+      "gia_su": "Tóm tắt giải",
+      "skill": [{"q": "Câu hỏi tương tự 1", "o": ["A","B","C","D"], "a": "Đáp án"}, {"q": "Câu hỏi tương tự 2", "o": ["A","B","C","D"], "a": "Đáp án"}]
+    }`;
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+    const prompt = systemPrompt + (text ? `\nCâu hỏi: ${text}` : "");
+    
+    let result;
+    if (image) {
+      result = await model.generateContent([
+        prompt,
+        { inlineData: { data: image.split(',')[1], mimeType: "image/jpeg" } }
+      ]);
+    } else {
+      result = await model.generateContent(prompt);
+    }
 
-  const data = await res.json();
-  return new Response(data.candidates[0].content.parts[0].text, { headers: { 'Content-Type': 'application/json' } });
+    const response = await result.response;
+    let responseText = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    res.status(200).json(JSON.parse(responseText));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Lỗi xử lý AI" });
+  }
 }
